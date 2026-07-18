@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTE Skills Profile Decoder | On-The-Fly Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Inline SVG Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f19">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-container">
+                <span class="logo-icon">PTE</span>
+                <h1 class="logo-title">Skills Profile Decoder</h1>
+            </div>
+
+            <div class="tabs-header">
+                <button class="tab-btn" data-tab="tab-json">Paste API JSON</button>
+                <button class="tab-btn active" data-tab="tab-sliders">Visual Sliders (Estimated Bars)</button>
+                <button class="tab-btn" data-tab="tab-help">Logic & Disclaimer</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Light/Dark Theme">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab: JSON Paste -->
+        <section class="panel tab-pane" id="tab-json">
+            <!-- Instructions Guide (Accordion) -->
+            <section class="panel guide-accordion"
+                style="margin-bottom: 1.5rem; background: rgba(255, 255, 255, 0.01); border-color: rgba(255, 255, 255, 0.05); padding: 1.25rem;">
+                <div class="accordion-header">
+                    <h3 style="margin: 0; font-size: 1.05rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                        How to Extract Your Scorecard JSON (Recommended)
+                    </h3>
+                    <span class="accordion-icon">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="steps-list" style="margin-top: 1rem;">
+                        <div class="step-card">
+                            <div class="step-number">1</div>
+                            <h4 class="step-title"><span>01</span> Open scorecard</h4>
+                            <p class="step-desc">Log in to your <strong>myPTE</strong> portal, go to your activity
+                                history, and open your score report web page.</p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-number">2</div>
+                            <h4 class="step-title"><span>02</span> Open inspect tool</h4>
+                            <p class="step-desc">Press <kbd>F12</kbd> (or right-click anywhere on the page and select
+                                <strong>Inspect</strong>) to open the developer tools.
+                            </p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-number">3</div>
+                            <h4 class="step-title"><span>03</span> Filter network tab</h4>
+                            <p class="step-desc">Select the <strong>Network</strong> tab, click the
+                                <strong>Fetch/XHR</strong> sub-filter, and refresh the page (<kbd>F5</kbd>).
+                            </p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-number">4</div>
+                            <h4 class="step-title"><span>04</span> Copy & Paste</h4>
+                            <p class="step-desc">Look for a request named:
+                                <span class="code-snippet">
+                                    <span>skills?ignoreCache=false</span>
+                                </span>
+                                Click it, select the <strong>Response</strong> tab, copy the entire block, and paste it
+                                here.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                </svg>
+                Paste Scorecard JSON Response
+            </div>
+            <!-- Dynamic JSON Error Banner -->
+            <div id="json-error-banner" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 500; line-height: 1.4;">
+                ⚠️ Invalid JSON format. Please copy the exact response payload from the Network tab (see guide above).
+            </div>
+            <textarea id="json-input" placeholder='{ "gseScore": 90, "listening": 90, "subskills": [...] }'></textarea>
+            <div class="btn-container">
+                <button class="btn" id="btn-analyze-json">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Decode & Analyze
+                </button>
+                <button class="btn btn-secondary" id="btn-load-sample">
+                    Load Sample Data
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab: Visual Sliders -->
+        <section class="panel tab-pane active" id="tab-sliders">
+            <div class="panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="21" x2="4" y2="14" />
+                    <line x1="4" y1="10" x2="4" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12" y2="3" />
+                    <line x1="20" y1="21" x2="20" y2="16" />
+                    <line x1="20" y1="12" x2="20" y2="3" />
+                    <line x1="1" y1="14" x2="7" y2="14" />
+                    <line x1="9" y1="8" x2="15" y2="8" />
+                    <line x1="17" y1="16" x2="23" y2="16" />
+                </svg>
+                Adjust Scores & Estimations
+            </div>
+
+            <!-- Communicative Scores Input -->
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="score-overall">Overall</label>
+                    <input type="number" id="score-overall" min="10" max="90" value="80">
+                </div>
+                <div class="input-group">
+                    <label for="score-listening">Listening</label>
+                    <input type="number" id="score-listening" min="10" max="90" value="80">
+                </div>
+                <div class="input-group">
+                    <label for="score-reading">Reading</label>
+                    <input type="number" id="score-reading" min="10" max="90" value="80">
+                </div>
+                <div class="input-group">
+                    <label for="score-speaking">Speaking</label>
+                    <input type="number" id="score-speaking" min="10" max="90" value="80">
+                </div>
+                <div class="input-group">
+                    <label for="score-writing">Writing</label>
+                    <input type="number" id="score-writing" min="10" max="90" value="80">
+                </div>
+            </div>
+
+            <!-- Sliders for Subskills -->
+            <div class="sliders-grid">
+                <!-- Slider 1 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Open Response Speaking and Writing (ORSW)</span>
+                        <span class="slider-value" id="val-sub-1">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-1" data-id="1" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 2 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Reproducing Spoken and Written Lang. (RSWL)</span>
+                        <span class="slider-value" id="val-sub-2">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-2" data-id="2" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 3 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Extended Writing (EW)</span>
+                        <span class="slider-value" id="val-sub-3">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-3" data-id="3" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 4 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Short Writing (SW)</span>
+                        <span class="slider-value" id="val-sub-4">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-4" data-id="4" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 5 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Extended Speaking (ES)</span>
+                        <span class="slider-value" id="val-sub-5">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-5" data-id="5" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 6 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Short Speaking (SS)</span>
+                        <span class="slider-value" id="val-sub-6">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-6" data-id="6" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 7 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Multiple-skills Comprehension (MSC)</span>
+                        <span class="slider-value" id="val-sub-7">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-7" data-id="7" min="10" max="90" value="80">
+                </div>
+                <!-- Slider 8 -->
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-name">Single-skill Comprehension (SSC)</span>
+                        <span class="slider-value" id="val-sub-8">80</span>
+                    </div>
+                    <input type="range" class="range-input" id="slider-8" data-id="8" min="10" max="90" value="80">
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn" id="btn-analyze-sliders">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Analyze Hand-Entered Scores
+                </button>
+                <button class="btn btn-secondary" id="btn-load-sample-sliders">
+                    Load Sample Data
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab: Help, Logic & Disclaimer -->
+        <section class="panel tab-pane" id="tab-help">
+            <div class="panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Help, Logic & Disclaimer
+            </div>
+            <div
+                style="font-size: 0.95rem; line-height: 1.65; color: var(--text-secondary); max-width: 800px; margin-top: 0.5rem;">
+                <h3 style="color: var(--text-white); margin-top: 1rem; margin-bottom: 0.5rem;">⚠️ The Legal Stuff (Our
+                    Disclaimer)</h3>
+                <p style="margin-bottom: 0.75rem;">
+                    First things first: This is an unofficial, community-developed helper tool. It is built out of a
+                    personal passion to help test-takers make sense of their results, and it is <strong>NOT</strong>
+                    affiliated with, sponsored by, or endorsed by Pearson PLC or any of its subsidiaries. "PTE" and all
+                    related trademarks belong entirely to their respective owners.
+                </p>
+                <p style="margin-bottom: 1.25rem;">
+                    <strong>A Quick Heads-Up:</strong> The analysis, mapping, and logic used here represent the
+                    developer's personal opinions, interpretations, and independent research. Because language testing
+                    algorithms are complex and constantly evolving, the insights provided here might not be 100%
+                    accurate and should be used as a general guide rather than an official diagnostic.
+                </p>
+
+                <h3 style="color: var(--text-white); margin-top: 1.5rem; margin-bottom: 0.5rem;">🧠 How the Logic Works
+                </h3>
+                <p style="margin-bottom: 0.75rem;">
+                    We want to take the guesswork out of your preparation! The tool uses a specific deduction engine to
+                    highlight where you can gain the most traction:
+                </p>
+                <ul style="padding-left: 1.25rem; list-style-type: disc; margin-bottom: 1.25rem;">
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong>The Focus Threshold:</strong> Any subprofile skill score <strong>less than 88</strong>
+                        is flagged as a potential area for growth.
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong>Smart Mapping:</strong> We cross-reference the 22 PTE question types against their
+                        related subskills. You can see exactly how these connections are made by checking out our
+                        Skills-to-Question-Type Matrix Table on this page.
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong>The Deduction Engine:</strong> Instead of just giving you generic advice, the tool looks
+                        for patterns. If you have asymmetric scores (for example: perfect transcribing but a low overall
+                        reproducing score), it tries to isolate the exact task causing the bottleneck. If multiple areas
+                        are low, it will gently highlight all related categories so you don't miss a thing.
+                    </li>
+                </ul>
+
+                <h3 style="color: var(--text-white); margin-top: 1.5rem; margin-bottom: 0.5rem;">📊 How Your Tasks Are
+                    Categorised</h3>
+                <p style="margin-bottom: 0.75rem;">
+                    To make your study plan easy to prioritise, we group question types into three buckets:
+                </p>
+                <ul style="padding-left: 1.25rem; list-style-type: disc; margin-bottom: 1.25rem;">
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong style="color: var(--color-danger);">🔴 Strong Focus Required:</strong> Question types
+                        where all mapped subskills scored below 88. These are your biggest opportunities for
+                        breakthrough!
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong style="color: var(--color-warn);">🟡 Requires Attention:</strong> Question types mapped
+                        to a mix of both high and low subskills.
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong style="color: var(--color-success);">🟢 Strong / Good:</strong> Question types where all
+                        contributing subskills scored 88 or higher. Keep doing what you're doing here!
+                    </li>
+                </ul>
+
+                <h3 style="color: var(--text-white); margin-top: 1.5rem; margin-bottom: 0.5rem;">🔒 Privacy & Security
+                    (Your Data is Safe)</h3>
+                <p>
+                    Studying for exams is stressful enough and you shouldn't have to worry about your data. This tool
+                    operates 100% locally in your web browser. None of your scorecard data, text, or pasted JSON is ever
+                    stored, uploaded, or transmitted to a server. Everything is computed instantly on your own device
+                    and vanishes the moment you close the tab.
+                </p>
+            </div>
+        </section>
+
+        <!-- Dashboard Outputs (Initially Hidden) -->
+        <main class="dashboard-layout" id="dashboard-panel" style="display: none;">
+            <!-- Left Column: Circular Meters -->
+            <section class="sidebar-panel">
+                <!-- Overall Score Gauge -->
+                <div class="panel overall-gauge-container">
+                    <div class="panel-title" style="margin-bottom: 0.5rem; justify-content: center;">Overall Score</div>
+                    <div class="gauge-svg">
+                        <svg viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#6366f1" />
+                                    <stop offset="100%" stop-color="#a855f7" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="gauge-bg" cx="80" cy="80" r="70" />
+                            <circle class="gauge-fill" id="overall-circle" cx="80" cy="80" r="70" />
+                        </svg>
+                        <div class="gauge-content">
+                            <span class="gauge-score" id="lbl-overall-score">90</span>
+                            <span class="gauge-label">GSE Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communicative Scores Mini Gauges -->
+                <div class="panel" style="padding: 1.25rem;">
+                    <div class="panel-title"
+                        style="margin-bottom: 1.25rem; font-size: 1.1rem; justify-content: center;">Communicative Skills
+                    </div>
+                    <div class="comm-grid">
+                        <!-- Listening -->
+                        <div class="comm-card">
+                            <div class="comm-mini-gauge">
+                                <svg viewBox="0 0 70 70">
+                                    <circle class="mini-gauge-bg" cx="35" cy="35" r="30" />
+                                    <circle class="mini-gauge-fill listening-stroke" id="circle-listening" cx="35"
+                                        cy="35" r="30" />
+                                </svg>
+                                <span class="mini-gauge-score" id="lbl-listening-score">90</span>
+                            </div>
+                            <span class="comm-label">Listening</span>
+                        </div>
+                        <!-- Reading -->
+                        <div class="comm-card">
+                            <div class="comm-mini-gauge">
+                                <svg viewBox="0 0 70 70">
+                                    <circle class="mini-gauge-bg" cx="35" cy="35" r="30" />
+                                    <circle class="mini-gauge-fill reading-stroke" id="circle-reading" cx="35" cy="35"
+                                        r="30" />
+                                </svg>
+                                <span class="mini-gauge-score" id="lbl-reading-score">90</span>
+                            </div>
+                            <span class="comm-label">Reading</span>
+                        </div>
+                        <!-- Speaking -->
+                        <div class="comm-card">
+                            <div class="comm-mini-gauge">
+                                <svg viewBox="0 0 70 70">
+                                    <circle class="mini-gauge-bg" cx="35" cy="35" r="30" />
+                                    <circle class="mini-gauge-fill speaking-stroke" id="circle-speaking" cx="35" cy="35"
+                                        r="30" />
+                                </svg>
+                                <span class="mini-gauge-score" id="lbl-speaking-score">90</span>
+                            </div>
+                            <span class="comm-label">Speaking</span>
+                        </div>
+                        <!-- Writing -->
+                        <div class="comm-card">
+                            <div class="comm-mini-gauge">
+                                <svg viewBox="0 0 70 70">
+                                    <circle class="mini-gauge-bg" cx="35" cy="35" r="30" />
+                                    <circle class="mini-gauge-fill writing-stroke" id="circle-writing" cx="35" cy="35"
+                                        r="30" />
+                                </svg>
+                                <span class="mini-gauge-score" id="lbl-writing-score">90</span>
+                            </div>
+                            <span class="comm-label">Writing</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Subskills & Priority Focus -->
+            <section class="main-dashboard">
+                <!-- Logical Deduction Insights Card (Only shown if rules trigger) -->
+                <div class="panel" id="insights-panel" style="display: none; border-color: rgba(239, 68, 68, 0.2);">
+                    <div class="panel-title" style="color: #ef4444;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        Logical Deduction Insights
+                    </div>
+                    <div class="insights-grid" id="deductions-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Set 1: Strong Focus Required -->
+                <div class="panel" style="border-color: rgba(239, 68, 68, 0.25);">
+                    <div class="panel-title" style="color: #ef4444;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        Strong Focus Required (All Associated Bars Low)
+                    </div>
+                    <div class="focus-questions-grid" id="strong-focus-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Set 2: Requires Attention (Mixed Bars) -->
+                <div class="panel" style="border-color: rgba(245, 158, 11, 0.25);">
+                    <div class="panel-title" style="color: #f59e0b;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Requires Attention (Mixed High & Low Bars)
+                    </div>
+                    <div class="focus-questions-grid" id="mixed-attention-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Set 3: Strong / All High Bars -->
+                <div class="panel" style="border-color: rgba(16, 185, 129, 0.25);">
+                    <div class="panel-title" style="color: #10b981;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        Strong / Good (All Associated Bars High)
+                    </div>
+                    <div class="focus-questions-grid" id="strong-performance-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Subskills Progress Bars -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                        Pearson Subskills Profile & Recommendations
+                    </div>
+                    <div class="subskills-list" id="subskills-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Reference Mapping Matrix Panel -->
+        <section class="panel" style="margin-top: 2rem;">
+            <div class="panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                PTE Skills-to-Question-Type Mapping Matrix (Reference)
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                This matrix shows how the 22 PTE question types map to the 8 Pearson subprofile skills.
+                Columns corresponding to low subskills (<span style="color: var(--color-danger); font-weight: 600;">&lt;
+                    88</span>) glow red to help you see how weaknesses intersect with specific tasks. Rows with a low
+                average score also highlight in red.
+            </p>
+            <div class="matrix-table-container">
+                <table class="matrix-table" id="mapping-matrix-table">
+                    <!-- Loaded dynamically via app.js -->
+                </table>
+            </div>
+            <div
+                style="font-size: 0.825rem; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.85rem;">
+                <strong>Abbreviation Key:</strong>
+                <span><strong>ORSW:</strong> Open Response Speaking/Writing</span>
+                <span><strong>RSWL:</strong> Reproducing Language</span>
+                <span><strong>EW:</strong> Extended Writing</span>
+                <span><strong>SW:</strong> Short Writing</span>
+                <span><strong>ES:</strong> Extended Speaking</span>
+                <span><strong>SS:</strong> Short Speaking</span>
+                <span><strong>MSC:</strong> Multiple-skills Comp.</span>
+                <span><strong>SSC:</strong> Single-skill Comp.</span>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>
+                Created by <strong><a href="https://angelpandey.com" target="_blank">Angel Pandey</a></strong> |
+                Inspired by the <strong><a href="Https://youtu.be/QZM4JvHw4po?si=EsKkVDuMWpDUt_tC" target="_blank">LA PTE Video (YouTube)</a></strong> |
+                Source Code & Feedback on <strong><a href="https://github.com/angel-pandey/pte-skills-decoder" target="_blank">GitHub</a></strong>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
