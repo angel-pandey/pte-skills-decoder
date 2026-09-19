@@ -50,6 +50,24 @@
             </div>
         </header>
 
+        <!-- Global Configuration -->
+        <section class="panel" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-color: rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.05);">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #818cf8;">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                </svg>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: 600; color: var(--text-white); font-size: 1.05rem;">Target Benchmark Score</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Set your desired minimum score (10-90)</span>
+                </div>
+            </div>
+            <div class="input-group" style="margin: 0; min-width: 100px;">
+                <input type="number" id="target-benchmark" min="10" max="90" value="88" style="padding: 0.5rem; text-align: center; font-weight: bold; font-size: 1.1rem; border-color: rgba(99, 102, 241, 0.5);">
+            </div>
+        </section>
+
         <!-- Tab: JSON Paste -->
         <section class="panel tab-pane" id="tab-json">
             <!-- Instructions Guide (Accordion) -->
@@ -286,7 +304,7 @@
                 </p>
                 <ul style="padding-left: 1.25rem; list-style-type: disc; margin-bottom: 1.25rem;">
                     <li style="margin-bottom: 0.5rem;">
-                        <strong>The Focus Threshold:</strong> Any subprofile skill score <strong>less than 88</strong>
+                        <strong>The Focus Threshold:</strong> Any subprofile skill score <strong>less than your target benchmark</strong>
                         is flagged as a potential area for growth.
                     </li>
                     <li style="margin-bottom: 0.5rem;">
@@ -310,7 +328,7 @@
                 <ul style="padding-left: 1.25rem; list-style-type: disc; margin-bottom: 1.25rem;">
                     <li style="margin-bottom: 0.5rem;">
                         <strong style="color: var(--color-danger);">🔴 Strong Focus Required:</strong> Question types
-                        where all mapped subskills scored below 88. These are your biggest opportunities for
+                        where all mapped subskills scored below your target benchmark. These are your biggest opportunities for
                         breakthrough!
                     </li>
                     <li style="margin-bottom: 0.5rem;">
@@ -319,7 +337,7 @@
                     </li>
                     <li style="margin-bottom: 0.5rem;">
                         <strong style="color: var(--color-success);">🟢 Strong / Good:</strong> Question types where all
-                        contributing subskills scored 88 or higher. Keep doing what you're doing here!
+                        contributing subskills met or exceeded your target benchmark. Keep doing what you're doing here!
                     </li>
                 </ul>
 
@@ -515,9 +533,9 @@
             </div>
             <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
                 This matrix shows how the 22 PTE question types map to the 8 Pearson subprofile skills.
-                Columns corresponding to low subskills (<span style="color: var(--color-danger); font-weight: 600;">&lt;
-                    88</span>) glow red to help you see how weaknesses intersect with specific tasks. Rows with a low
-                average score also highlight in red.
+            Columns corresponding to low subskills (<span style="color: var(--color-danger); font-weight: 600;">below
+                target</span>) glow red to help you see how weaknesses intersect with specific tasks. Rows with a low
+            average score also highlight in red.
             </p>
             <div class="matrix-table-container">
                 <table class="matrix-table" id="mapping-matrix-table">

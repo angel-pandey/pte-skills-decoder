@@ -60,12 +60,16 @@ let currentScores = {
     }
 };
 
+// Target benchmark score for analysis
+let targetBenchmark = 88;
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initTabs();
     initAccordion();
     initSliders();
+    initTargetBenchmark();
     
     // Register service worker for offline PWA support
     if ('serviceWorker' in navigator) {
@@ -93,6 +97,54 @@ function initAccordion() {
         header.classList.toggle("active");
         content.classList.toggle("show");
     });
+}
+
+// Setup Target Benchmark Input
+function initTargetBenchmark() {
+    const targetInput = document.getElementById("target-benchmark");
+    if (!targetInput) return;
+
+    targetInput.addEventListener("blur", (e) => {
+        let val = parseInt(e.target.value) || 88;
+        val = Math.max(10, Math.min(90, val));
+        e.target.value = val;
+        
+        if (targetBenchmark !== val) {
+            targetBenchmark = val;
+            // Update sliders UI if they've changed coloring
+            syncSliderColors();
+            if (hasAnalyzed) {
+                renderDashboard(false);
+            }
+        }
+    });
+
+    targetInput.addEventListener("input", (e) => {
+        let val = parseInt(e.target.value);
+        if (!isNaN(val) && val >= 10 && val <= 90) {
+            targetBenchmark = val;
+            syncSliderColors();
+            if (hasAnalyzed) {
+                renderDashboard(false);
+            }
+        }
+    });
+}
+
+// Update slider label colors based on new benchmark
+function syncSliderColors() {
+    for (let i = 1; i <= 8; i++) {
+        const valSpan = document.getElementById(`val-sub-${i}`);
+        if (valSpan) {
+            const val = parseInt(valSpan.textContent);
+            valSpan.className = "slider-value";
+            if (val < targetBenchmark) {
+                valSpan.classList.add("low-score");
+            } else {
+                valSpan.classList.add("high-score");
+            }
+        }
+    }
 }
 
 // Setup Tab Switching
@@ -123,7 +175,7 @@ function initSliders() {
             
             // Apply color classes
             valSpan.className = "slider-value";
-            if (val < 88) {
+            if (val < targetBenchmark) {
                 valSpan.classList.add("low-score");
             } else {
                 valSpan.classList.add("high-score");
@@ -209,7 +261,7 @@ function parseJSONInput() {
             slider.value = score;
             valSpan.textContent = score;
             valSpan.className = "slider-value";
-            if (score < 88) valSpan.classList.add("low-score");
+            if (score < targetBenchmark) valSpan.classList.add("low-score");
             else valSpan.classList.add("high-score");
         }
         
@@ -301,7 +353,7 @@ function renderDashboard(shouldScroll = true) {
     
     for (let i = 1; i <= 8; i++) {
         const score = currentScores.subskills[i];
-        const isLow = score < 88;
+        const isLow = score < targetBenchmark;
         const metadata = SUBSKILLS_METADATA[i];
         
         const row = document.createElement("div");
@@ -325,8 +377,8 @@ function renderDashboard(shouldScroll = true) {
     }
     
     // 4. Run Deduction Engine
-    // Determine status: Score < 88 is LOW, >= 88 is HIGH
-    const getStatus = (subskillId) => currentScores.subskills[subskillId] < 88 ? "LOW" : "HIGH";
+    // Determine status: Score < targetBenchmark is LOW, >= targetBenchmark is HIGH
+    const getStatus = (subskillId) => currentScores.subskills[subskillId] < targetBenchmark ? "LOW" : "HIGH";
     
     const statusMap = {
         open_response_speaking_and_writing: getStatus(1),
@@ -355,7 +407,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.short_writing === "HIGH" && statusMap.reproducing_spoken_and_written_language === "LOW") {
         triggeredRules.push({
             name: "Isolate Read Aloud & Repeat Sentence",
-            deduction: "Since Short Writing is strong (>= 88) but Reproducing Spoken and Written Language is low (< 88), the performance deficiency is mathematically isolated to speaking reproduction tasks.",
+            deduction: `Since Short Writing is strong (>= ${targetBenchmark}) but Reproducing Spoken and Written Language is low (< ${targetBenchmark}), the performance deficiency is mathematically isolated to speaking reproduction tasks.`,
             targets: ["Read Aloud", "Repeat Sentence"]
         });
         rsIsolating = true;
@@ -365,7 +417,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.short_speaking === "HIGH" && statusMap.reproducing_spoken_and_written_language === "LOW") {
         triggeredRules.push({
             name: "Isolate Write from Dictation",
-            deduction: "Since Short Speaking is strong (>= 88) but Reproducing Spoken and Written Language is low (< 88), the performance deficiency is mathematically isolated to written transcription tasks.",
+            deduction: `Since Short Speaking is strong (>= ${targetBenchmark}) but Reproducing Spoken and Written Language is low (< ${targetBenchmark}), the performance deficiency is mathematically isolated to written transcription tasks.`,
             targets: ["Write from Dictation"]
         });
         wfdIsolating = true;
@@ -375,7 +427,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.multiple_skills_comprehension === "HIGH" && statusMap.extended_speaking === "LOW") {
         triggeredRules.push({
             name: "Isolate Describe Image & Respond to a Situation",
-            deduction: "Since Multiple-skills Comprehension is strong (>= 88) but Extended Speaking is low (< 88), the deficiency is mapped to single-skill spoken production tasks.",
+            deduction: `Since Multiple-skills Comprehension is strong (>= ${targetBenchmark}) but Extended Speaking is low (< ${targetBenchmark}), the deficiency is mapped to single-skill spoken production tasks.`,
             targets: ["Describe Image", "Respond to a Situation"]
         });
         esIsolating = true;
@@ -385,7 +437,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.short_writing === "HIGH" && statusMap.extended_writing === "LOW") {
         triggeredRules.push({
             name: "Isolate Extended Writing Structures",
-            deduction: "Short Writing is strong (>= 88) but Extended Writing is low (< 88), showing that the issue lies in long-form formatting, argument structure, or length limits rather than short transcription.",
+            deduction: `Short Writing is strong (>= ${targetBenchmark}) but Extended Writing is low (< ${targetBenchmark}), showing that the issue lies in long-form formatting, argument structure, or length limits rather than short transcription.`,
             targets: ["Summarize Written Text", "Write Essay", "Summarize Spoken Text"]
         });
         ewIsolating = true;
@@ -396,7 +448,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.reproducing_spoken_and_written_language === "LOW" && !rsIsolating && !wfdIsolating) {
         triggeredRules.push({
             name: "Reproducing Spoken & Written Language Weakness",
-            deduction: "Your Reproducing Spoken and Written Language score is low (< 88), indicating performance drops across both spoken repeat and written copy tasks.",
+            deduction: `Your Reproducing Spoken and Written Language score is low (< ${targetBenchmark}), indicating performance drops across both spoken repeat and written copy tasks.`,
             targets: ["Read Aloud", "Repeat Sentence", "Write from Dictation"]
         });
     }
@@ -405,7 +457,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.extended_speaking === "LOW" && !esIsolating) {
         triggeredRules.push({
             name: "Extended Speaking Weakness",
-            deduction: "Your Extended Speaking score is low (< 88), indicating deficiency in long spoken output formats.",
+            deduction: `Your Extended Speaking score is low (< ${targetBenchmark}), indicating deficiency in long spoken output formats.`,
             targets: ["Describe Image", "Re-tell Lecture", "Summarize Group Discussion", "Respond to a Situation"]
         });
     }
@@ -414,7 +466,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.extended_writing === "LOW" && !ewIsolating) {
         triggeredRules.push({
             name: "Extended Writing Weakness",
-            deduction: "Your Extended Writing score is low (< 88), indicating deficiency in essay writing and summarizing long-form texts.",
+            deduction: `Your Extended Writing score is low (< ${targetBenchmark}), indicating deficiency in essay writing and summarizing long-form texts.`,
             targets: ["Summarize Written Text", "Write Essay", "Summarize Spoken Text"]
         });
     }
@@ -423,7 +475,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.open_response_speaking_and_writing === "LOW") {
         triggeredRules.push({
             name: "Open Response Speaking & Writing Weakness",
-            deduction: "Your Open Response Speaking and Writing score is low (< 88), indicating performance drop in tasks requiring original text or voice content creation.",
+            deduction: `Your Open Response Speaking and Writing score is low (< ${targetBenchmark}), indicating performance drop in tasks requiring original text or voice content creation.`,
             targets: ["Describe Image", "Re-tell Lecture", "Summarize Group Discussion", "Respond to a Situation", "Summarize Written Text", "Write Essay", "Summarize Spoken Text"]
         });
     }
@@ -432,7 +484,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.multiple_skills_comprehension === "LOW") {
         triggeredRules.push({
             name: "Multiple-skills Comprehension Weakness",
-            deduction: "Your Multiple-skills Comprehension score is low (< 88), indicating a performance drop in tasks requiring simultaneous intake and output across different communication modes.",
+            deduction: `Your Multiple-skills Comprehension score is low (< ${targetBenchmark}), indicating a performance drop in tasks requiring simultaneous intake and output across different communication modes.`,
             targets: ["Repeat Sentence", "Re-tell Lecture", "Summarize Group Discussion", "Summarize Written Text", "Summarize Spoken Text", "Highlight Correct Summary", "Highlight Incorrect Words", "Write from Dictation"]
         });
     }
@@ -441,7 +493,7 @@ function renderDashboard(shouldScroll = true) {
     if (statusMap.single_skill_comprehension === "LOW") {
         triggeredRules.push({
             name: "Target Reading & Single-Skill Core",
-            deduction: "Your Single-skill Comprehension score is low (< 88), which is directly tied to reading comprehension and vocabulary-focused tasks.",
+            deduction: `Your Single-skill Comprehension score is low (< ${targetBenchmark}), which is directly tied to reading comprehension and vocabulary-focused tasks.`,
             targets: ["Answer Short Question", "Respond to a Situation", "Reading & Writing: Fill in the Blanks", "Re-order Paragraphs", "Reading: Fill in the Blanks", "Listening: Fill in the Blanks", "Select Missing Word"]
         });
     }
@@ -486,7 +538,7 @@ function renderDashboard(shouldScroll = true) {
         q.subskills.forEach(subId => {
             const subScore = currentScores.subskills[subId];
             scores.push(subScore);
-            const isLow = subScore < 88;
+            const isLow = subScore < targetBenchmark;
             subskillsImpacted.push({
                 name: SUBSKILLS_METADATA[subId].name,
                 score: subScore,
@@ -586,10 +638,10 @@ function renderMappingMatrix() {
     
     const subskillAbbreviations = ["ORSW", "RSWL", "EW", "SW", "ES", "SS", "MSC", "SSC"];
     
-    // Classify which columns are LOW (< 88)
+    // Classify which columns are LOW (< targetBenchmark)
     const isColumnLow = {};
     for (let i = 1; i <= 8; i++) {
-        isColumnLow[i] = currentScores.subskills[i] < 88;
+        isColumnLow[i] = currentScores.subskills[i] < targetBenchmark;
     }
     
     // Table Header
