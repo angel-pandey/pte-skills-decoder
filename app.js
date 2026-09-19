@@ -102,33 +102,33 @@ function initAccordion() {
 // Setup Target Benchmark Input
 function initTargetBenchmark() {
     const targetInput = document.getElementById("target-benchmark");
+    const errorMsg = document.getElementById("benchmark-error");
     if (!targetInput) return;
 
-    targetInput.addEventListener("blur", (e) => {
-        let val = parseInt(e.target.value) || 88;
-        val = Math.max(10, Math.min(90, val));
-        e.target.value = val;
-        
-        if (targetBenchmark !== val) {
-            targetBenchmark = val;
-            // Update sliders UI if they've changed coloring
-            syncSliderColors();
-            if (hasAnalyzed) {
-                renderDashboard(false);
-            }
-        }
-    });
-
-    targetInput.addEventListener("input", (e) => {
+    const validateAndUpdate = (e) => {
         let val = parseInt(e.target.value);
-        if (!isNaN(val) && val >= 10 && val <= 90) {
-            targetBenchmark = val;
-            syncSliderColors();
-            if (hasAnalyzed) {
-                renderDashboard(false);
+        if (isNaN(val) || val < 10 || val > 90) {
+            // Show error, don't update benchmark
+            if (errorMsg) errorMsg.style.display = "block";
+            targetInput.style.borderColor = "#f87171";
+        } else {
+            // Hide error, update benchmark
+            if (errorMsg) errorMsg.style.display = "none";
+            targetInput.style.borderColor = "rgba(99, 102, 241, 0.5)";
+            
+            if (targetBenchmark !== val) {
+                targetBenchmark = val;
+                // Update sliders UI if they've changed coloring
+                syncSliderColors();
+                if (hasAnalyzed) {
+                    renderDashboard(false);
+                }
             }
         }
-    });
+    };
+
+    targetInput.addEventListener("input", validateAndUpdate);
+    targetInput.addEventListener("blur", validateAndUpdate);
 }
 
 // Update slider label colors based on new benchmark
