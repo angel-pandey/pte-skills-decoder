@@ -16,9 +16,10 @@ This application is **100% serverless, secure, and offline-ready**. It processes
 - **Visual Score Sliders:** Simulated visual inputs allow you to manually adjust the 8 subprofile bars and 5 communicative scores, with "Load Sample Data" buttons pre-populating inputs instantly.
 - **Factual Deduction Engine:** Evaluates subskill score asymmetries on-the-fly to isolate target weaknesses (e.g., distinguishing between oral reproduction errors and transcription errors) using strict diagnostic facts.
 - **Three-Tier Performance Focus:**
-  - 🛑 **Strong Focus Required:** Tasks where **all** mapped contributing subskills are low (score < 88).
+  - 🛑 **Strong Focus Required:** Tasks where **all** mapped contributing subskills are low (score < target benchmark).
   - ⚠️ **Requires Attention (Mixed):** Tasks mapped to a mixture of both high and low subskills.
-  - ✅ **Strong / Good:** Tasks where **all** contributing subskills are strong (score &ge; 88).
+  - ✅ **Strong / Good:** Tasks where **all** contributing subskills are strong (score &ge; target benchmark).
+- **Customizable Target Benchmark:** You are no longer locked into the default 88 score. Set your own target threshold (10-90) and instantly watch the dashboard logically re-evaluate all your weaknesses, colors, and diagnostic advice on-the-fly.
 - **Interactive Skills Matrix:** A dynamic comparison grid mapping the 22 PTE question types against the 8 subskills, complete with neutral-to-colored highlight animations post-analysis.
 
 ---
